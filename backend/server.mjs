@@ -4,10 +4,7 @@ import { registerNotifications } from './notifications.mjs';
 import express from 'express';
 import { createHash } from 'node:crypto';
 
-import {
-  initializeApp,
-  applicationDefault
-} from 'firebase-admin/app';
+import { initializeApp, applicationDefault, cert } from 'firebase-admin/app';
 
 import { getAuth } from 'firebase-admin/auth';
 
@@ -32,8 +29,50 @@ import {
 } from './business-sync.mjs';
 
 // Server credentials are supplied through the environment.
+function getFirebaseCredential() {
+  const raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+
+  // Local development can still use the existing credential file.
+  if (!raw) {
+    if (process.env.WEBSITE_SITE_NAME) {
+      throw new Error(
+        'FIREBASE_SERVICE_ACCOUNT_JSON is missing in Azure settings.'
+      );
+    }
+
+    return applicationDefault();
+  }
+
+  let account;
+
+  try {
+    account = JSON.parse(raw);
+  } catch {
+    throw new Error(
+      'FIREBASE_SERVICE_ACCOUNT_JSON is not valid JSON.'
+    );
+  }
+
+  const expectedProject =
+    process.env.GOOGLE_CLOUD_PROJECT || 'bizmanage-sa';
+
+  if (
+    account.type !== 'service_account' ||
+    account.project_id !== expectedProject ||
+    typeof account.client_email !== 'string' ||
+    typeof account.private_key !== 'string'
+  ) {
+    throw new Error(
+      'Firebase Admin credentials are incomplete or belong to a different project.'
+    );
+  }
+
+  return cert(account);
+}
+
 initializeApp({
-  credential: applicationDefault()
+  credential: getFirebaseCredential(),
+  projectId: process.env.GOOGLE_CLOUD_PROJECT || 'bizmanage-sa'
 });
 
 const db = getFirestore();
