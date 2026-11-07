@@ -852,3 +852,10 @@ I used the following official documentation when developing and configuring the 
 
 - GitHub Actions: https://docs.github.com/actions
 
+
+## Final submission downloads
+
+- [Signed release APK](https://drive.google.com/file/d/1lbG72bfC1vqIBXaRH5hBQYrCx6_FtwGH/view?usp=drive_link)
+- [Physical Android device demonstration — 5 minutes 33 seconds](https://drive.google.com/file/d/1A0ecMg_jIXK31J2VCxyhLz_a96rvedPM/view?usp=sharing)
+
+The demonstration shows the tested development build. The signed release APK built successfully but has not yet been tested on a device.
