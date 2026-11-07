@@ -10,15 +10,15 @@ I developed the application using Kotlin and Jetpack Compose, with Room for loca
 
 
 
-\## Project links
+## Project links
 
 
 
-\- \*\*Source code:\*\* https://github.com/ndamase107/BizManage-SA-Final-POE
+- \*\*Source code:\*\* https://github.com/ndamase107/BizManage-SA-Final-POE
 
-\- \*\*Hosted API health check:\*\* https://bizmanage-sa-api-nsabwa03-cagmawcsaxgpg4e4.indiasouthcentral-01.azurewebsites.net/health
+- \*\*Hosted API health check:\*\* https://bizmanage-sa-api-nsabwa03-cagmawcsaxgpg4e4.indiasouthcentral-01.azurewebsites.net/health
 
-\- \*\*API base URL:\*\* https://bizmanage-sa-api-nsabwa03-cagmawcsaxgpg4e4.indiasouthcentral-01.azurewebsites.net/v1/
+- \*\*API base URL:\*\* https://bizmanage-sa-api-nsabwa03-cagmawcsaxgpg4e4.indiasouthcentral-01.azurewebsites.net/v1/
 
 
 
@@ -26,111 +26,111 @@ I also recorded a \*\*5-minute, 33-second demonstration\*\* of the application r
 
 
 
-\## Features
+## Features
 
 
 
-\### Authentication and account separation
+### Authentication and account separation
 
 
 
-\- Google sign-in using Firebase Authentication.
+- Google sign-in using Firebase Authentication.
 
-\- Optional biometric authentication for a signed-in account.
+- Optional biometric authentication for a signed-in account.
 
-\- Separate local databases and cloud records for each account.
+- Separate local databases and cloud records for each account.
 
-\- Protected API endpoints that verify Firebase ID tokens.
+- Protected API endpoints that verify Firebase ID tokens.
 
-\- Cloud access based on the authenticated user's account.
+- Cloud access based on the authenticated user's account.
 
 
 
-\### Inventory management
+### Inventory management
 
 
 
-\- Add and view products.
+- Add and view products.
 
-\- Search by product name, category or barcode.
+- Search by product name, category or barcode.
 
-\- Store cost prices, selling prices, quantities and minimum stock levels.
+- Store cost prices, selling prices, quantities and minimum stock levels.
 
-\- Add stock to existing products.
+- Add stock to existing products.
 
-\- Identify products that have reached their minimum stock level.
+- Identify products that have reached their minimum stock level.
 
-\- Upload and retrieve product photographs through Cloudinary.
+- Upload and retrieve product photographs through Cloudinary.
 
 
 
-\### Sales management
+### Sales management
 
 
 
-\- Record a sale against a selected product.
+- Record a sale against a selected product.
 
-\- Validate the requested quantity and available stock.
+- Validate the requested quantity and available stock.
 
-\- Calculate sale values using integer cents.
+- Calculate sale values using integer cents.
 
-\- Deduct inventory when a sale is recorded.
+- Deduct inventory when a sale is recorded.
 
-\- Detect price changes before accepting a sale.
+- Detect price changes before accepting a sale.
 
-\- Reuse operation IDs safely so retries do not deduct stock twice.
+- Reuse operation IDs safely so retries do not deduct stock twice.
 
 
 
-\### Customers and expenses
+### Customers and expenses
 
 
 
-\- Add and view customer records.
+- Add and view customer records.
 
-\- Record expense descriptions, categories, dates and amounts.
+- Record expense descriptions, categories, dates and amounts.
 
-\- Save changes locally and synchronise supported records with the API.
+- Save changes locally and synchronise supported records with the API.
 
 
 
-\### Offline storage and synchronisation
+### Offline storage and synchronisation
 
 
 
-\- Room stores business records on the device.
+- Room stores business records on the device.
 
-\- An outbox preserves changes waiting to upload.
+- An outbox preserves changes waiting to upload.
 
-\- WorkManager schedules synchronisation when a network connection is available.
+- WorkManager schedules synchronisation when a network connection is available.
 
-\- Temporary connection failures trigger retries.
+- Temporary connection failures trigger retries.
 
-\- Stable operation IDs protect against duplicate uploads.
+- Stable operation IDs protect against duplicate uploads.
 
-\- Version checks prevent an older change from silently replacing newer cloud data.
+- Version checks prevent an older change from silently replacing newer cloud data.
 
-\- A conflict review screen lets the user compare local and cloud product information before choosing the cloud version.
+- A conflict review screen lets the user compare local and cloud product information before choosing the cloud version.
 
-\- Synchronisation status and manual retry controls are available in Settings.
+- Synchronisation status and manual retry controls are available in Settings.
 
 
 
-\### Notifications
+### Notifications
 
 
 
-\- Firebase Cloud Messaging provides business notifications.
+- Firebase Cloud Messaging provides business notifications.
 
-\- Users can manage notification permission and their business notification preference.
+- Users can manage notification permission and their business notification preference.
 
-\- The backend creates a low-stock alert when a sale reduces stock from above the minimum level to the minimum level or below.
+- The backend creates a low-stock alert when a sale reduces stock from above the minimum level to the minimum level or below.
 
-\- Device registration links notifications to the authenticated account.
+- Device registration links notifications to the authenticated account.
 
 
 
-\### Language support
+### Language support
 
 
 
@@ -138,11 +138,11 @@ The project includes language resources and an app language selector for:
 
 
 
-\- English
+- English
 
-\- isiZulu
+- isiZulu
 
-\- Sesotho
+- Sesotho
 
 
 
@@ -150,7 +150,7 @@ Some interface text remains in English. Translation coverage is therefore a know
 
 
 
-\## Technology stack
+## Technology stack
 
 
 
@@ -190,7 +190,7 @@ Some interface text remains in English. Translation coverage is therefore a know
 
 
 
-\## Project structure
+## Project structure
 
 
 
@@ -236,7 +236,7 @@ The project separates interface, data access, persistence and business rules. So
 
 
 
-\## How synchronisation works
+## How synchronisation works
 
 
 
@@ -262,27 +262,27 @@ A genuine conflict requires review. Retrying a request does not automatically ov
 
 
 
-\## Android setup
+## Android setup
 
 
 
-\### Requirements
+### Requirements
 
 
 
-\- Android Studio.
+- Android Studio.
 
-\- JDK 21 for running the project's Gradle build.
+- JDK 21 for running the project's Gradle build.
 
-\- Android SDK Platform 37.1.
+- Android SDK Platform 37.1.
 
-\- An Android device running Android 7.1 / API 25 or later, or a suitable emulator.
+- An Android device running Android 7.1 / API 25 or later, or a suitable emulator.
 
-\- A Google account and Google Play services for Google sign-in.
+- A Google account and Google Play services for Google sign-in.
 
 
 
-\### Open the project
+### Open the project
 
 
 
@@ -310,7 +310,7 @@ com.example.bizmanagezz
 
 
 
-\### Firebase configuration
+### Firebase configuration
 
 
 
@@ -334,7 +334,7 @@ When building with a different signing key, register that key's SHA-1 fingerprin
 
 
 
-\### Build and run unit tests
+### Build and run unit tests
 
 
 
@@ -388,27 +388,27 @@ The debug APK is a testing build, not a signed production release.
 
 
 
-\## Backend setup
+## Backend setup
 
 
 
-\### Requirements
+### Requirements
 
 
 
-\- Node.js 24 LTS.
+- Node.js 24 LTS.
 
-\- npm.
+- npm.
 
-\- Access to the relevant Firebase project.
+- Access to the relevant Firebase project.
 
-\- Firebase Admin credentials for local development.
+- Firebase Admin credentials for local development.
 
-\- Cloudinary credentials for product image uploads.
+- Cloudinary credentials for product image uploads.
 
 
 
-\### Install dependencies
+### Install dependencies
 
 
 
@@ -424,7 +424,7 @@ npm --prefix .\\backend ci
 
 
 
-\### Environment variables
+### Environment variables
 
 
 
@@ -462,7 +462,7 @@ Private keys and API secrets must not be placed in Android source files, the REA
 
 
 
-\### Start the API locally
+### Start the API locally
 
 
 
@@ -516,7 +516,7 @@ The Android application currently points to the hosted Azure API, so normal host
 
 
 
-\## API overview
+## API overview
 
 
 
@@ -524,21 +524,21 @@ The API includes authenticated routes for:
 
 
 
-\- Listing, creating, updating and deleting products.
+- Listing, creating, updating and deleting products.
 
-\- Recording product-based sales.
+- Recording product-based sales.
 
-\- Reading supported sales records.
+- Reading supported sales records.
 
-\- Reading and writing customers.
+- Reading and writing customers.
 
-\- Reading and writing expenses.
+- Reading and writing expenses.
 
-\- Registering notification devices.
+- Registering notification devices.
 
-\- Sending a notification connection test.
+- Sending a notification connection test.
 
-\- Uploading and retrieving product photographs.
+- Uploading and retrieving product photographs.
 
 
 
@@ -562,11 +562,11 @@ The backend derives account ownership from the verified token rather than trusti
 
 
 
-\## Testing
+## Testing
 
 
 
-\### Android unit tests
+### Android unit tests
 
 
 
@@ -582,7 +582,7 @@ The sale rule tests cover monetary calculations and invalid sale conditions.
 
 
 
-\### Backend unit tests
+### Backend unit tests
 
 
 
@@ -598,29 +598,29 @@ The backend tests cover areas including:
 
 
 
-\- Integer-cent calculations.
+- Integer-cent calculations.
 
-\- Stock deduction and overselling.
+- Stock deduction and overselling.
 
-\- Changed product prices.
+- Changed product prices.
 
-\- Deleted products.
+- Deleted products.
 
-\- Invalid quantities and prices.
+- Invalid quantities and prices.
 
-\- Record ID validation.
+- Record ID validation.
 
-\- Sale retry matching.
+- Sale retry matching.
 
-\- Customer validation.
+- Customer validation.
 
-\- Expense amounts and dates.
+- Expense amounts and dates.
 
-\- Invalid and oversized image uploads.
+- Invalid and oversized image uploads.
 
 
 
-\### Live integration checks
+### Live integration checks
 
 
 
@@ -646,9 +646,9 @@ The recorded successful runs included:
 
 
 
-\- 11 live API checks.
+- 11 live API checks.
 
-\- Four product retry checks.
+- Four product retry checks.
 
 
 
@@ -660,7 +660,7 @@ The verification scripts create temporary test accounts and records and attempt 
 
 
 
-\### Manual testing
+### Manual testing
 
 
 
@@ -668,27 +668,27 @@ During development I checked:
 
 
 
-\- Google sign-in.
+- Google sign-in.
 
-\- Biometric access.
+- Biometric access.
 
-\- Product creation and stock changes.
+- Product creation and stock changes.
 
-\- Product-based sales.
+- Product-based sales.
 
-\- Offline changes followed by synchronisation.
+- Offline changes followed by synchronisation.
 
-\- Customer and expense uploads to Firestore.
+- Customer and expense uploads to Firestore.
 
-\- Recovery after a temporary synchronisation failure.
+- Recovery after a temporary synchronisation failure.
 
-\- Product conflict review.
+- Product conflict review.
 
-\- Notification permission and FCM delivery.
+- Notification permission and FCM delivery.
 
-\- A real low-stock notification triggered by a sale.
+- A real low-stock notification triggered by a sale.
 
-\- Connection from the Android application to the hosted Azure HTTPS API.
+- Connection from the Android application to the hosted Azure HTTPS API.
 
 
 
@@ -696,7 +696,7 @@ I also completed a physical Android device demonstration and recorded it for sub
 
 
 
-\## GitHub Actions
+## GitHub Actions
 
 
 
@@ -704,7 +704,7 @@ The repository contains two project workflows:
 
 
 
-\### Android build and unit tests
+### Android build and unit tests
 
 
 
@@ -712,7 +712,7 @@ Builds the debug application and runs local Android unit tests. Test reports are
 
 
 
-\### Test and deploy BizManage SA API
+### Test and deploy BizManage SA API
 
 
 
@@ -728,7 +728,7 @@ The repository also contains an inherited Classroom autograding workflow. Its re
 
 
 
-\## Hosting
+## Hosting
 
 
 
@@ -744,33 +744,33 @@ A successful health response confirms that the API process is responding. Authen
 
 
 
-\## Current limitations
+## Current limitations
 
 
 
-\- Some screens still contain hard-coded English text.
+- Some screens still contain hard-coded English text.
 
-\- MVVM is not applied consistently across every screen.
+- MVVM is not applied consistently across every screen.
 
-\- Historical sales are not fully restored from the cloud to another device.
+- Historical sales are not fully restored from the cloud to another device.
 
-\- Legacy amount-only sales and business profile settings remain local.
+- Legacy amount-only sales and business profile settings remain local.
 
-\- Product photograph uploads require internet access and are not queued for offline upload.
+- Product photograph uploads require internet access and are not queued for offline upload.
 
-\- Photo upload and retrieval need to be checked explicitly on the final physical-device build.
+- Photo upload and retrieval need to be checked explicitly on the final physical-device build.
 
-\- Product conflict recovery has been tested; pending-sale conflict scenarios need further verification.
+- Product conflict recovery has been tested; pending-sale conflict scenarios need further verification.
 
-\- Archived conflict information does not yet have a dedicated export screen.
+- Archived conflict information does not yet have a dedicated export screen.
 
-\- The free hosting plan does not provide an always-running backend.
+- The free hosting plan does not provide an always-running backend.
 
-\- A signed release build and its release signing configuration are separate from the current debug build.
+- A signed release build and its release signing configuration are separate from the current debug build.
 
 
 
-\## Submission evidence
+## Submission evidence
 
 
 
@@ -778,25 +778,25 @@ My final submission should include:
 
 
 
-\- The public GitHub repository link.
+- The public GitHub repository link.
 
-\- The physical-device demonstration recording.
+- The physical-device demonstration recording.
 
-\- Build and test evidence.
+- Build and test evidence.
 
-\- Screenshots of the main application features.
+- Screenshots of the main application features.
 
-\- Evidence of offline changes synchronising to Firestore.
+- Evidence of offline changes synchronising to Firestore.
 
-\- Evidence of the low-stock notification.
+- Evidence of the low-stock notification.
 
-\- The required written reflection and AI-use declaration.
+- The required written reflection and AI-use declaration.
 
-\- The final APK or other release artefacts required by the assignment.
+- The final APK or other release artefacts required by the assignment.
 
 
 
-\## AI assistance
+## AI assistance
 
 
 
@@ -812,7 +812,7 @@ AI assistance does not replace the need to understand, verify and explain the su
 
 
 
-\## Documentation and references
+## Documentation and references
 
 
 
@@ -820,35 +820,35 @@ I used the following official documentation when developing and configuring the 
 
 
 
-\- Kotlin: https://kotlinlang.org/docs/home.html
+- Kotlin: https://kotlinlang.org/docs/home.html
 
-\- Jetpack Compose: https://developer.android.com/develop/ui/compose
+- Jetpack Compose: https://developer.android.com/develop/ui/compose
 
-\- Android architecture: https://developer.android.com/topic/architecture
+- Android architecture: https://developer.android.com/topic/architecture
 
-\- Room: https://developer.android.com/training/data-storage/room
+- Room: https://developer.android.com/training/data-storage/room
 
-\- WorkManager: https://developer.android.com/topic/libraries/architecture/workmanager
+- WorkManager: https://developer.android.com/topic/libraries/architecture/workmanager
 
-\- Android biometrics: https://developer.android.com/identity/sign-in/biometric-auth
+- Android biometrics: https://developer.android.com/identity/sign-in/biometric-auth
 
-\- Android app languages: https://developer.android.com/guide/topics/resources/app-languages
+- Android app languages: https://developer.android.com/guide/topics/resources/app-languages
 
-\- Firebase Authentication: https://firebase.google.com/docs/auth/android/google-signin
+- Firebase Authentication: https://firebase.google.com/docs/auth/android/google-signin
 
-\- Firebase Admin SDK: https://firebase.google.com/docs/admin/setup
+- Firebase Admin SDK: https://firebase.google.com/docs/admin/setup
 
-\- Cloud Firestore: https://firebase.google.com/docs/firestore
+- Cloud Firestore: https://firebase.google.com/docs/firestore
 
-\- Firebase Cloud Messaging: https://firebase.google.com/docs/cloud-messaging
+- Firebase Cloud Messaging: https://firebase.google.com/docs/cloud-messaging
 
-\- Cloudinary Node.js integration: https://cloudinary.com/documentation/node\_integration
+- Cloudinary Node.js integration: https://cloudinary.com/documentation/node\_integration
 
-\- Retrofit: https://square.github.io/retrofit/
+- Retrofit: https://square.github.io/retrofit/
 
-\- Express: https://expressjs.com/
+- Express: https://expressjs.com/
 
-\- Azure App Service for Node.js: https://learn.microsoft.com/azure/app-service/quickstart-nodejs
+- Azure App Service for Node.js: https://learn.microsoft.com/azure/app-service/quickstart-nodejs
 
-\- GitHub Actions: https://docs.github.com/actions
+- GitHub Actions: https://docs.github.com/actions
 
