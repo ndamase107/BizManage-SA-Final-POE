@@ -1,82 +1,464 @@
 package com.example.bizmanagezz.data.repository
 
+import android.content.Context
+import android.util.Log
+import androidx.room.withTransaction
 import com.example.bizmanagezz.data.api.BizManageApi
-import com.example.bizmanagezz.data.model.*
-import kotlinx.coroutines.delay
+import com.example.bizmanagezz.data.local.AccountStorage
+import com.example.bizmanagezz.data.local.AppDatabase
+import com.example.bizmanagezz.data.local.CustomerEntity
+import com.example.bizmanagezz.data.local.ExpenseEntity
+import com.example.bizmanagezz.data.local.ProductEntity
+import com.example.bizmanagezz.data.local.SaleEntity
+import com.example.bizmanagezz.data.model.Customer
+import com.example.bizmanagezz.data.model.Dashboard
+import com.example.bizmanagezz.data.model.Expense
+import com.example.bizmanagezz.data.model.Product
+import com.example.bizmanagezz.data.model.Sale
+import com.example.bizmanagezz.data.sync.SyncQueue
+import com.example.bizmanagezz.data.sync.BusinessCloudSync
+import com.example.bizmanagezz.domain.SaleRules
+import java.math.BigDecimal
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
-class BizRepository(private val api: BizManageApi? = null) {
+class BizRepository(
+    @Suppress("UNUSED_PARAMETER")
+    private val api: BizManageApi? = null
+) {
 
-    private val products = mutableListOf(
-        Product("1", "Bread", "Food", 10.0, 15.0, 18, 5, "600100000001"),
-        Product("2", "Milk 1L", "Food", 16.0, 22.0, 7, 5, "600100000002"),
-        Product("3", "T-Shirt", "Clothing", 80.0, 130.0, 3, 5, "600100000003"),
-        Product("4", "Shampoo", "Beauty", 35.0, 55.0, 12, 4, "600100000004")
-    )
+    private val accountId = AccountStorage.currentUid()
 
-    private val customers = mutableListOf(
-        Customer("1", "Thandi Mokoena", "071 000 0001", "thandi@example.com"),
-        Customer("2", "Sipho Dlamini", "072 000 0002", "sipho@example.com")
-    )
+    private val db: AppDatabase
+        get() {
+            val context = checkNotNull(applicationContext) {
+                "Initialize BizRepository before using it."
+            }
 
-    private val expenses = mutableListOf(
-        Expense("1", "Shop electricity", "Utilities", 850.0, "2026-09-20"),
-        Expense("2", "Transport", "Transport", 300.0, "2026-09-21")
-    )
+            return AppDatabase.getInstance(
+                context = context,
+                accountId = accountId
+            )
+        }
 
-    private val sales = mutableListOf(
-        Sale("1", "Thandi Mokoena", 420.0, "2026-09-21 10:20"),
-        Sale("2", "Walk-in customer", 185.0, "2026-09-21 13:10")
-    )
+    private suspend fun readyDatabase(): AppDatabase {
+        SyncQueue.requireAccount(accountId)
+
+        val database = db
+
+        SyncQueue.start(database, accountId)
+
+        return database
+    }
 
     suspend fun getProducts(): List<Product> {
-        delay(120)
-        return products.toList()
+        return readyDatabase()
+            .productDao()
+            .getProducts()
+            .map { entity ->
+                Product(
+                    id = entity.id,
+                    name = entity.name,
+                    category = entity.category,
+                    costPrice = entity.costPrice,
+                    sellingPrice = entity.sellingPrice,
+                    quantity = entity.quantity,
+                    minimumStock = entity.minimumStock,
+                    barcode = entity.barcode
+                )
+            }
     }
 
     suspend fun saveProduct(product: Product) {
-        val index = products.indexOfFirst { it.id == product.id }
-        if (index >= 0) products[index] = product else products.add(product)
-        api?.let { runCatching { if (index >= 0) it.updateProduct(product.id, product) else it.createProduct(product) } }
+        requireValidId(product.id)
+
+        require(
+            product.name.isNotBlank() &&
+                    product.name.trim().length <= 200
+        ) {
+            "Enter a product name of 1â€“200 characters."
+        }
+
+        require(
+            product.category.isNotBlank() &&
+                    product.category.trim().length <= 200
+        ) {
+            "Enter a category of 1â€“200 characters."
+        }
+
+        require(product.barcode.trim().length <= 100) {
+            "Barcode must be at most 100 characters."
+        }
+
+        val costCents = SaleRules.priceToCents(
+            product.costPrice
+        )
+
+        val sellingCents = SaleRules.priceToCents(
+            product.sellingPrice
+        )
+
+        require(costCents in 0L..1_000_000_000L) {
+            "Cost price is outside the supported range."
+        }
+
+        require(sellingCents in 1L..1_000_000_000L) {
+            "Selling price must be at least R0.01."
+        }
+
+        require(product.quantity in 0..1_000_000) {
+            "Quantity must be between 0 and 1,000,000."
+        }
+
+        require(product.minimumStock in 0..1_000_000) {
+            "Minimum stock must be between 0 and 1,000,000."
+        }
+
+        val database = readyDatabase()
+
+        val entity = ProductEntity(
+            id = product.id,
+            name = product.name.trim(),
+            category = product.category.trim(),
+            costPrice = product.costPrice,
+            sellingPrice = product.sellingPrice,
+            quantity = product.quantity,
+            minimumStock = product.minimumStock,
+            barcode = product.barcode.trim()
+        )
+
+        database.withTransaction {
+            SyncQueue.requireAccount(accountId)
+
+            database.productDao().upsert(entity)
+
+            // Save the outgoing operation in the same transaction.
+            SyncQueue.enqueueProduct(database, entity)
+        }
+
+        SyncQueue.schedule(accountId)
+
+        Log.d(TAG, "Product saved locally and queued")
     }
 
     suspend fun deleteProduct(id: String) {
-        products.removeAll { it.id == id }
-        api?.let { runCatching { it.deleteProduct(id) } }
+        requireValidId(id)
+
+        val database = readyDatabase()
+
+        database.withTransaction {
+            SyncQueue.requireAccount(accountId)
+
+            if (database.productDao().getProduct(id) != null) {
+                database.productDao().delete(id)
+
+                SyncQueue.enqueueDeletion(
+                    database,
+                    id
+                )
+            }
+        }
+
+        SyncQueue.schedule(accountId)
+
+        Log.d(
+            TAG,
+            "Product deletion saved locally and queued"
+        )
     }
 
-    suspend fun getCustomers(): List<Customer> = customers.toList()
+    suspend fun getCustomers(): List<Customer> {
+        return readyDatabase()
+            .businessDao()
+            .getCustomers()
+            .map { entity ->
+                Customer(
+                    id = entity.id,
+                    name = entity.name,
+                    phone = entity.phone,
+                    email = entity.email
+                )
+            }
+    }
 
     suspend fun saveCustomer(customer: Customer) {
-        val index = customers.indexOfFirst { it.id == customer.id }
-        if (index >= 0) customers[index] = customer else customers.add(customer)
+        requireValidId(customer.id)
+
+        require(
+            customer.name.isNotBlank() &&
+                customer.name.trim().length <= 200
+        ) {
+            "Enter a customer name of 1–200 characters."
+        }
+
+        require(customer.phone.trim().length <= 100) {
+            "Phone must be at most 100 characters."
+        }
+
+        require(customer.email.trim().length <= 200) {
+            "Email must be at most 200 characters."
+        }
+
+        val database = readyDatabase()
+
+        val entity = CustomerEntity(
+            id = customer.id,
+            name = customer.name.trim(),
+            phone = customer.phone.trim(),
+            email = customer.email.trim()
+        )
+
+        database.withTransaction {
+            SyncQueue.requireAccount(accountId)
+
+            database.businessDao().saveCustomer(entity)
+
+            BusinessCloudSync.enqueueCustomer(
+                database,
+                entity
+            )
+        }
+
+        SyncQueue.schedule(accountId)
+        Log.d(TAG, "Customer saved locally and queued")
     }
 
-    suspend fun getExpenses(): List<Expense> = expenses.toList()
+    suspend fun getExpenses(): List<Expense> {
+        return readyDatabase()
+            .businessDao()
+            .getExpenses()
+            .map { entity ->
+                Expense(
+                    id = entity.id,
+                    description = entity.description,
+                    category = entity.category,
+                    amount = entity.amount,
+                    date = entity.date,
+                    synced = entity.synced
+                )
+            }
+    }
 
     suspend fun saveExpense(expense: Expense) {
-        expenses.add(expense)
+        requireValidId(expense.id)
+
+        require(
+            expense.description.isNotBlank() &&
+                expense.description.trim().length <= 200
+        ) {
+            "Enter a description of 1–200 characters."
+        }
+
+        require(
+            expense.category.isNotBlank() &&
+                expense.category.trim().length <= 200
+        ) {
+            "Enter a category of 1–200 characters."
+        }
+
+        val amountCents = SaleRules.priceToCents(
+            expense.amount
+        )
+
+        require(amountCents in 1L..1_000_000_000L) {
+            "Enter an expense amount of at least R0.01."
+        }
+
+        val dateFormat = SimpleDateFormat(
+            "yyyy-MM-dd",
+            Locale.US
+        ).apply {
+            isLenient = false
+        }
+
+        val parsedDate = runCatching {
+            dateFormat.parse(expense.date)
+        }.getOrNull()
+
+        require(
+            parsedDate != null &&
+                dateFormat.format(parsedDate) == expense.date
+        ) {
+            "Expense date must be a valid yyyy-MM-dd date."
+        }
+
+        val database = readyDatabase()
+
+        val entity = ExpenseEntity(
+            id = expense.id,
+            description = expense.description.trim(),
+            category = expense.category.trim(),
+            amount = expense.amount,
+            date = expense.date,
+            synced = false
+        )
+
+        database.withTransaction {
+            SyncQueue.requireAccount(accountId)
+
+            database.businessDao().saveExpense(entity)
+
+            BusinessCloudSync.enqueueExpense(
+                database,
+                entity
+            )
+        }
+
+        SyncQueue.schedule(accountId)
+        Log.d(TAG, "Expense saved locally and queued")
     }
 
-    suspend fun getSales(): List<Sale> = sales.toList()
+    suspend fun getSales(): List<Sale> {
+        return readyDatabase()
+            .businessDao()
+            .getSales()
+            .map { entity ->
+                Sale(
+                    id = entity.id,
+                    customerName = entity.customerName,
+                    total = entity.total,
+                    date = entity.date,
+                    synced = entity.synced
+                )
+            }
+    }
 
+    /**
+     * Compatibility method for older amount-only callers.
+     * Product-based sales must use SaleCheckout.
+     */
     suspend fun saveSale(sale: Sale) {
-        sales.add(0, sale)
-        val productIds = products.map { it.id }.toSet()
-        if (productIds.isNotEmpty()) {
-            // Inventory mutation is handled by the sale workflow in a later backend-integrated phase.
+        require(sale.id.isNotBlank()) {
+            "Sale ID is required."
         }
+
+        require(
+            sale.total.isFinite() &&
+                    sale.total > 0
+        ) {
+            "Sale total must be greater than zero."
+        }
+
+        require(sale.date.isNotBlank()) {
+            "Sale date is required."
+        }
+
+        val database = readyDatabase()
+
+        SyncQueue.requireAccount(accountId)
+
+        database.businessDao().saveSale(
+            SaleEntity(
+                id = sale.id,
+                customerName = sale.customerName
+                    ?.trim()
+                    ?.takeIf { it.isNotEmpty() },
+                total = sale.total,
+                date = sale.date,
+                synced = false
+            )
+        )
+
+        Log.d(
+            TAG,
+            "Amount-only sale saved locally"
+        )
     }
 
     suspend fun getDashboard(): Dashboard {
-        val salesTotal = sales.sumOf { it.total }
-        val expenseTotal = expenses.sumOf { it.amount }
-        return Dashboard(
-            salesToday = salesTotal,
-            expensesToday = expenseTotal,
-            estimatedProfit = salesTotal - expenseTotal,
-            transactionCount = sales.size,
-            lowStockCount = products.count { it.quantity <= it.minimumStock },
-            recentActivity = sales.take(3).map { "Sale: R${"%.2f".format(it.total)}" }
-        )
+        val database = readyDatabase()
+
+        return database.withTransaction {
+            val today = SimpleDateFormat(
+                "yyyy-MM-dd",
+                Locale.US
+            ).format(Date())
+
+            val sales = database
+                .businessDao()
+                .getSales()
+
+            val expenses = database
+                .businessDao()
+                .getExpenses()
+
+            val products = database
+                .productDao()
+                .getProducts()
+
+            val todaySales = sales.filter {
+                it.date.take(10) == today
+            }
+
+            val todayExpenses = expenses.filter {
+                it.date.take(10) == today
+            }
+
+            val salesTotal = todaySales.fold(
+                BigDecimal.ZERO
+            ) { sum, sale ->
+                sum.add(
+                    BigDecimal.valueOf(sale.total)
+                )
+            }
+
+            val expenseTotal = todayExpenses.fold(
+                BigDecimal.ZERO
+            ) { sum, expense ->
+                sum.add(
+                    BigDecimal.valueOf(expense.amount)
+                )
+            }
+
+            Dashboard(
+                salesToday = salesTotal.toDouble(),
+
+                expensesToday = expenseTotal.toDouble(),
+
+                // This is sales less expenses, excluding stock costs.
+                estimatedProfit = salesTotal
+                    .subtract(expenseTotal)
+                    .toDouble(),
+
+                transactionCount = todaySales.size,
+
+                lowStockCount = products.count {
+                    it.quantity <= it.minimumStock
+                },
+
+                recentActivity = sales.take(3).map {
+                    String.format(
+                        Locale.US,
+                        "Sale: R%.2f",
+                        it.total
+                    )
+                }
+            )
+        }
+    }
+
+    private fun requireValidId(id: String) {
+        require(
+            id.matches(
+                Regex("[a-zA-Z0-9_-]{1,128}")
+            )
+        ) {
+            "Record ID contains unsupported characters."
+        }
+    }
+
+    companion object {
+
+        private const val TAG = "BizRepository"
+
+        @Volatile
+        private var applicationContext: Context? = null
+
+        fun initialize(context: Context) {
+            applicationContext = context.applicationContext
+
+            SyncQueue.initialize(context)
+        }
     }
 }

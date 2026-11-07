@@ -1,21 +1,59 @@
 package com.example.bizmanagezz.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.bizmanagezz.data.model.Product
 import com.example.bizmanagezz.data.repository.BizRepository
+import java.util.Locale
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProductDetailsScreen(productId: String, onBack: () -> Unit) {
+fun ProductDetailsScreen(
+    productId: String,
+    onBack: () -> Unit
+) {
     val repo = remember { BizRepository() }
-    var product by remember { mutableStateOf<Product?>(null) }
-    var saved by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
-    LaunchedEffect(productId) {
-        product = repo.getProducts().firstOrNull { it.id == productId }
+    var product by remember(productId) {
+        mutableStateOf<Product?>(null)
+    }
+
+    var isLoading by remember(productId) {
+        mutableStateOf(true)
+    }
+
+    var isSaving by remember(productId) {
+        mutableStateOf(false)
+    }
+
+    var saved by remember(productId) {
+        mutableStateOf(false)
+    }
+
+    var errorMessage by remember(productId) {
+        mutableStateOf<String?>(null)
+    }
+
+    ObserveLocalChanges(
+        "products",
+        onError = {
+            errorMessage = "Could not load this product."
+            isLoading = false
+        }
+    ) {
+        product = repo.getProducts().firstOrNull {
+            it.id == productId
+        }
+
+        isLoading = false
     }
 
     Scaffold(
@@ -23,33 +61,116 @@ fun ProductDetailsScreen(productId: String, onBack: () -> Unit) {
             TopAppBar(
                 title = { Text("Product Details") },
                 navigationIcon = {
-                    TextButton(onClick = onBack) { Text("Back") }
+                    TextButton(onClick = onBack) {
+                        Text("Back")
+                    }
                 }
             )
         }
     ) { padding ->
-        ScreenColumn {
-            Spacer(Modifier.height(padding.calculateTopPadding()))
-            val p = product
-            if (p == null) {
-                EmptyState("Product not found")
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            errorMessage?.let {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+
+            val currentProduct = product
+
+            if (isLoading) {
+                CircularProgressIndicator()
+            } else if (currentProduct == null) {
+                Text("Product not found.")
             } else {
-                Text(p.name, style = MaterialTheme.typography.headlineSmall)
-                Text("Category: ${p.category}")
-                Text("Cost price: R${"%.2f".format(p.costPrice)}")
-                Text("Selling price: R${"%.2f".format(p.sellingPrice)}")
-                Text("Quantity: ${p.quantity}")
-                Text("Minimum stock: ${p.minimumStock}")
-                Text("Barcode: ${p.barcode}")
+                Text(
+                    text = currentProduct.name,
+                    style = MaterialTheme.typography.headlineSmall
+                )
 
-                Button(onClick = {
-                    kotlinx.coroutines.MainScope().launch {
-                        repo.saveProduct(p.copy(quantity = p.quantity + 1))
-                        saved = true
+                ProductPhotoPanel(
+                    productId = currentProduct.id
+                )
+
+                Text("Category: ${currentProduct.category}")
+
+                Text(
+                    String.format(
+                        Locale.US,
+                        "Cost price: R%.2f",
+                        currentProduct.costPrice
+                    )
+                )
+
+                Text(
+                    String.format(
+                        Locale.US,
+                        "Selling price: R%.2f",
+                        currentProduct.sellingPrice
+                    )
+                )
+
+                Text("Quantity: ${currentProduct.quantity}")
+                Text("Minimum stock: ${currentProduct.minimumStock}")
+                Text("Barcode: ${currentProduct.barcode}")
+
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !isSaving,
+                    onClick = {
+                        saved = false
+                        errorMessage = null
+
+                        if (currentProduct.quantity >= 1_000_000) {
+                            errorMessage =
+                                "Stock has reached the maximum quantity."
+                        } else {
+                            isSaving = true
+
+                            scope.launch {
+                                try {
+                                    repo.saveProduct(
+                                        currentProduct.copy(
+                                            quantity =
+                                                currentProduct.quantity + 1
+                                        )
+                                    )
+
+                                    saved = true
+                                } catch (
+                                    cancelled: CancellationException
+                                ) {
+                                    throw cancelled
+                                } catch (_: Exception) {
+                                    errorMessage =
+                                        "Could not confirm the update. " +
+                                                "Check stock before retrying."
+                                } finally {
+                                    isSaving = false
+                                }
+                            }
+                        }
                     }
-                }, Modifier.fillMaxWidth()) { Text("Add Stock") }
+                ) {
+                    Text(
+                        if (isSaving) {
+                            "Updating..."
+                        } else {
+                            "Add Stock"
+                        }
+                    )
+                }
 
-                if (saved) Text("Stock updated.")
+                if (saved) {
+                    Text("Stock updated.")
+                }
             }
         }
     }

@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">BizManage SA</string>
+    <string name="bm_settings">Ditlhophiso</string>
+    <string name="bm_language">Puo ya app</string>
+    <string name="bm_language_help">Kgetha puo ebe o boloka. App e tla buleha hape ho sebedisa puo eo.</string>
+    <string name="bm_notifications">Fumana ditsebiso tsa kgwebo</string>
+    <string name="bm_notification_help">Kgetho ena e tla laola ditsebiso ha tshebeletso ya ho di romela e hoketswe.</string>
+    <string name="bm_business_details">Dintlha tsa kgwebo</string>
+    <string name="bm_business_name">Lebitso la kgwebo</string>
+    <string name="bm_business_type">Mofuta wa kgwebo</string>
+    <string name="bm_contact">Dintlha tsa puisano</string>
+    <string name="bm_address">Aterese ya kgwebo</string>
+    <string name="bm_save_settings">Boloka ditlhophiso</string>
+    <string name="bm_saving">E a boloka...</string>
+    <string name="bm_saved">Ditlhophiso di bolokilwe.</string>
+    <string name="bm_name_required">Kenya lebitso la kgwebo ya hao.</string>
+    <string name="bm_save_failed">Ditlhophiso ha di a bolokwa. Hlahloba sebaka sa polokelo ebe o leka hape.</string>
+    <string name="bm_logout">Tswa</string>
+    <string name="bm_dashboard">Kakaretso</string>
+    <string name="bm_sales">Dithekiso</string>
+    <string name="bm_inventory">Setoko</string>
+    <string name="bm_customers">Bareki</string>
+    <string name="bm_more">Tse ding</string>
+</resources>

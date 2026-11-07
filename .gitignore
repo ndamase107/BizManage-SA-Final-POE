@@ -13,3 +13,27 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Private Firebase server keys
+**/*firebase-adminsdk*.json
+
+# Local backups and unrelated projects
+/sync-backups/
+/app/TOHMS*/
+*.zip
+*.before-*
+
+# Private server credentials and signing keys
+**/*firebase-adminsdk*.json
+**/.env
+**/.env.*
+*.pem
+*.p12
+*.jks
+*.keystore
+
+# Generated files
+**/node_modules/
+**/build/
+.gradle/
+local.properties

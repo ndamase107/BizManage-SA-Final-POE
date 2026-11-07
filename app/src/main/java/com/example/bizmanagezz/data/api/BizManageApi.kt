@@ -1,60 +1,84 @@
 package com.example.bizmanagezz.data.api
 
-import com.example.bizmanagezz.data.model.*
-import retrofit2.http.*
+import retrofit2.http.Body
+import retrofit2.http.DELETE
+import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Path
+import retrofit2.http.Query
+
+data class CloudProduct(
+    val id: String,
+    val name: String,
+    val category: String,
+    val costPriceCents: Long,
+    val sellingPriceCents: Long,
+    val quantity: Int,
+    val minimumStock: Int,
+    val barcode: String,
+    val version: Long,
+    val deleted: Boolean
+)
+
+data class CloudProductsPage(
+    val items: List<CloudProduct>,
+    val nextCursor: String?
+)
+
+data class CloudProductWrite(
+    val name: String,
+    val category: String,
+    val costPriceCents: Long,
+    val sellingPriceCents: Long,
+    val quantity: Int,
+    val minimumStock: Int,
+    val barcode: String,
+    val expectedVersion: Long
+)
+
+data class CloudSaleWrite(
+    val id: String,
+    val productId: String,
+    val quantity: Int,
+    val expectedPriceCents: Long,
+    val customerName: String?
+)
+
+data class CloudSaleResult(
+    val id: String,
+    val totalCents: Long,
+    val replayed: Boolean
+)
 
 interface BizManageApi {
-    @GET("businesses/{id}")
-    suspend fun getBusiness(@Path("id") id: String): Business
-
-    @PUT("businesses/{id}")
-    suspend fun updateBusiness(
-        @Path("id") id: String,
-        @Body business: Business
-    ): Business
 
     @GET("products")
-    suspend fun getProducts(): List<Product>
-
-    @POST("products")
-    suspend fun createProduct(@Body product: Product): Product
+    suspend fun getProducts(
+        @Header("Authorization") authorization: String,
+        @Query("after") after: String? = null
+    ): CloudProductsPage
 
     @PUT("products/{id}")
-    suspend fun updateProduct(
+    suspend fun saveProduct(
+        @Header("Authorization") authorization: String,
         @Path("id") id: String,
-        @Body product: Product
-    ): Product
+        @Body product: CloudProductWrite,
+        @Header("Idempotency-Key") operationId: String? = null
+    ): CloudProduct
 
     @DELETE("products/{id}")
-    suspend fun deleteProduct(@Path("id") id: String)
-
-    @GET("products/low-stock")
-    suspend fun getLowStockProducts(): List<Product>
-
-    @GET("sales")
-    suspend fun getSales(): List<Sale>
+    suspend fun deleteProduct(
+        @Header("Authorization") authorization: String,
+        @Path("id") id: String,
+        @Query("expectedVersion") expectedVersion: Long,
+        @Header("Idempotency-Key") operationId: String? = null
+    )
 
     @POST("sales")
-    suspend fun createSale(@Body sale: Sale): Sale
-
-    @GET("expenses")
-    suspend fun getExpenses(): List<Expense>
-
-    @POST("expenses")
-    suspend fun createExpense(@Body expense: Expense): Expense
-
-    @GET("customers")
-    suspend fun getCustomers(): List<Customer>
-
-    @POST("customers")
-    suspend fun createCustomer(@Body customer: Customer): Customer
-
-    @GET("reports/dashboard")
-    suspend fun getDashboard(): Dashboard
-
-    @POST("sync")
-    suspend fun synchronise(@Body records: List<Any>)
-
-    @POST("notifications/register")
-    suspend fun registerNotificationDevice(@Body token: Map<String, String>)
+    suspend fun createSale(
+        @Header("Authorization") authorization: String,
+        @Body sale: CloudSaleWrite
+    ): CloudSaleResult
 }

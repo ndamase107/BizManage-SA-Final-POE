@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "463690329969",
+    "project_id": "bizmanage-sa",
+    "storage_bucket": "bizmanage-sa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:463690329969:android:d0c95c13254a26cf1350d0",
+        "android_client_info": {
+          "package_name": "com.example.bizmanagezz"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "463690329969-j1jnn1jikptesmmgp7n48tbkdle1j8e7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.bizmanagezz",
+            "certificate_hash": "eea1fe26058f08d7e445ba5fb5d7ac42b9629ea0"
+          }
+        },
+        {
+          "client_id": "463690329969-radivdt1dslulqg0236ifnquvb2e730t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA71TN9YadHbS_a_TvzQE-iT8J8AP06fD8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "463690329969-radivdt1dslulqg0236ifnquvb2e730t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

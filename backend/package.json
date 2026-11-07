@@ -1,0 +1,21 @@
+{
+  "name": "bizmanage-sa-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "cloudinary": "2.11.0",
+    "express": "5.1.0",
+    "firebase-admin": "14.5.0"
+  },
+  "overrides": {
+    "rimraf": "6.1.4"
+  }
+}

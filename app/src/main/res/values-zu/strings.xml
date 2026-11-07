@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">BizManage SA</string>
+    <string name="bm_settings">Izilungiselelo</string>
+    <string name="bm_language">Ulimi lohlelo</string>
+    <string name="bm_language_help">Khetha ulimi bese ulondoloza. Uhlelo luzovuleka kabusha ukuze lusebenzise ulimi olukhethiwe.</string>
+    <string name="bm_notifications">Thola izaziso zebhizinisi</string>
+    <string name="bm_notification_help">Lokhu okukhethile kuzolawula izaziso uma isevisi yokuzithumela isixhunyiwe.</string>
+    <string name="bm_business_details">Imininingwane yebhizinisi</string>
+    <string name="bm_business_name">Igama lebhizinisi</string>
+    <string name="bm_business_type">Uhlobo lwebhizinisi</string>
+    <string name="bm_contact">Imininingwane yokuxhumana</string>
+    <string name="bm_address">Ikheli lebhizinisi</string>
+    <string name="bm_save_settings">Londoloza izilungiselelo</string>
+    <string name="bm_saving">Kuyalondolozwa...</string>
+    <string name="bm_saved">Izilungiselelo zilondoloziwe.</string>
+    <string name="bm_name_required">Faka igama lebhizinisi lakho.</string>
+    <string name="bm_save_failed">Izilungiselelo azilondolozekanga. Hlola indawo yokugcina bese uzama futhi.</string>
+    <string name="bm_logout">Phuma</string>
+    <string name="bm_dashboard">Isifinyezo</string>
+    <string name="bm_sales">Ukuthengisa</string>
+    <string name="bm_inventory">Isitoko</string>
+    <string name="bm_customers">Amakhasimende</string>
+    <string name="bm_more">Okunye</string>
+</resources>

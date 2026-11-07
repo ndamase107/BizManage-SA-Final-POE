@@ -14,15 +14,31 @@ import com.example.bizmanagezz.data.repository.BizRepository
 @Composable
 fun SalesScreen(navController: NavHostController) {
     val repo = remember { BizRepository() }
+    var loadError by remember { mutableStateOf<String?>(null) }
     var sales by remember { mutableStateOf<List<Sale>>(emptyList()) }
 
-    LaunchedEffect(Unit) { sales = repo.getSales() }
+    ObserveLocalChanges(
+        "sales",
+        onError = {
+            loadError = "Could not refresh sales."
+        }
+    ) {
+        sales = repo.getSales()
+        loadError = null
+    }
 
     Column(Modifier.fillMaxSize().padding(16.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text("Sales", style = MaterialTheme.typography.headlineMedium)
             Button(onClick = { navController.navigate("new_sale") }) { Text("New Sale") }
         }
+        loadError?.let {
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+
         Spacer(Modifier.height(12.dp))
 
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {

@@ -15,11 +15,20 @@ import kotlinx.coroutines.launch
 @Composable
 fun DashboardScreen(navController: NavHostController) {
     val repo = remember { BizRepository() }
+    var loadError by remember { mutableStateOf<String?>(null) }
     var dashboard by remember { mutableStateOf<Dashboard?>(null) }
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(Unit) {
+    ObserveLocalChanges(
+        "products",
+        "sales",
+        "expenses",
+        onError = {
+            loadError = "Could not refresh the dashboard."
+        }
+    ) {
         dashboard = repo.getDashboard()
+        loadError = null
     }
 
     LazyColumn(
@@ -27,7 +36,7 @@ fun DashboardScreen(navController: NavHostController) {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         item {
-            Text("Good day 👋", style = MaterialTheme.typography.titleMedium)
+            Text("Good day ðŸ‘‹", style = MaterialTheme.typography.titleMedium)
             Text("BizManage SA", style = MaterialTheme.typography.headlineMedium)
         }
 
@@ -40,7 +49,7 @@ fun DashboardScreen(navController: NavHostController) {
 
         item {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                StatCard("Profit", "R${"%.2f".format(dashboard?.estimatedProfit ?: 0.0)}", Modifier.weight(1f))
+                StatCard("Sales less expenses", "R${"%.2f".format(dashboard?.estimatedProfit ?: 0.0)}", Modifier.weight(1f))
                 StatCard("Low stock", "${dashboard?.lowStockCount ?: 0}", Modifier.weight(1f))
             }
         }
@@ -53,8 +62,17 @@ fun DashboardScreen(navController: NavHostController) {
             }
         }
 
+        item {
+            loadError?.let {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        }
+
         item { SectionTitle("Recent activity") }
-        items(dashboard?.recentActivity ?: emptyList()) { Text("• $it") }
+        items(dashboard?.recentActivity ?: emptyList()) { Text("â€¢ $it") }
 
         item {
             Button(onClick = { navController.navigate("settings") }, Modifier.fillMaxWidth()) {
