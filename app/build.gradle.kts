@@ -29,7 +29,7 @@ android {
         buildConfigField(
             "String",
             "API_BASE_URL",
-            "\"https://example.com/v1/\""
+            "\"https://bizmanage-sa-api-nsabwa03-cagmawcsaxgpg4e4.indiasouthcentral-01.azurewebsites.net/v1/\""
         )
     }
 
@@ -39,7 +39,7 @@ android {
             buildConfigField(
                 "String",
                 "API_BASE_URL",
-                "\"http://127.0.0.1:3000/v1/\""
+                "\"https://bizmanage-sa-api-nsabwa03-cagmawcsaxgpg4e4.indiasouthcentral-01.azurewebsites.net/v1/\""
             )
         }
 
