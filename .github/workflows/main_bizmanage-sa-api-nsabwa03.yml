@@ -1,65 +1,86 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy Node.js app to Azure Web App - bizmanage-sa-api-nsabwa03
+name: Test and deploy BizManage SA API
 
 on:
   push:
     branches:
-      - 'main'
+      - main
   workflow_dispatch:
+
+concurrency:
+  group: bizmanage-api-production
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
+
+    defaults:
+      run:
+        working-directory: backend
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js version
-        uses: actions/setup-node@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '24.x'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
 
-      - name: npm install, build, and test
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run backend tests
+        run: npm test
+
+      - name: Keep production dependencies
+        run: npm prune --omit=dev
+
+      - name: Package backend
         run: |
-          npm install
-          npm run build --if-present
-          npm run test --if-present
+          zip -qr ../backend-deploy.zip . \
+            -x '.env' '.env.*' \
+            '*firebase-adminsdk*.json' \
+            '*.before-*'
 
-      - name: Upload artifact for deployment job
+      - name: Upload deployment package
         uses: actions/upload-artifact@v4
         with:
-          name: node-app
-          path: .
+          name: backend-package
+          path: backend-deploy.zip
+          retention-days: 3
+          if-no-files-found: error
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
+
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write
+      contents: read
 
     steps:
-      - name: Download artifact from build job
+      - name: Download deployment package
         uses: actions/download-artifact@v4
         with:
-          name: node-app
-      
-      - name: Login to Azure
+          name: backend-package
+
+      - name: Sign in to Azure
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_AB29B16C2EC24984B03913E7E5663E41 }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_617F4F679CC34AAA9904B46E7A9D4B69 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_3C4F381AB0DE4EDB80E96722954F2A58 }}
 
-      - name: 'Deploy to Azure Web App'
-        id: deploy-to-webapp
+      - name: Deploy backend
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'bizmanage-sa-api-nsabwa03'
-          slot-name: 'Production'
-          package: .
-          
+          app-name: bizmanage-sa-api-nsabwa03
+          slot-name: Production
+          package: backend-deploy.zip
+          startup-command: npm start
